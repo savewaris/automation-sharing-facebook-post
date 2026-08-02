@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# User Data & Facebook Session Cookies
+user_data/
+
+# Environment & Logs
+.env
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
