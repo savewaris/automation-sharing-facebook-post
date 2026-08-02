@@ -44,7 +44,7 @@ function startServer(port = 3000) {
         const timer = setTimeout(() => reject(new Error(`Server start timeout on port ${port}`)), 10000);
 
         serverProcess.stdout.on('data', (data) => {
-            if (data.toString().includes('Facebook Automation Server running')) {
+            if (data.toString().includes('Facebook Automation Dashboard') || data.toString().includes('Facebook Automation Server running')) {
                 clearTimeout(timer);
                 resolve(serverProcess);
             }

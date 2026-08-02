@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const FacebookCore = require('./lib/facebook-core');
@@ -16,6 +17,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Serve static frontend dashboard
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Instantiate Facebook Core Engine
 const fbEngine = new FacebookCore();
 app.locals.fbEngine = fbEngine;
@@ -29,7 +33,7 @@ app.use('/api', createApiRouter(fbEngine));
 // Start Server
 server.listen(PORT, () => {
     console.log(`====================================================`);
-    console.log(`🚀 Facebook Automation Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Facebook Automation Dashboard: http://localhost:${PORT}`);
     console.log(`📡 WebSocket Log Stream: ws://localhost:${PORT}/ws/logs`);
     console.log(`====================================================`);
 });
