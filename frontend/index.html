@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Facebook Group Post Automation Dashboard - Manage sessions, extract groups, and automate post sharing.">
+    <meta name="description" content="Facebook Group Post Automation Dashboard - Manage sessions, extract groups, real-time group search, preset management, and safe anti-spam post sharing.">
     <title>Facebook Automation Dashboard</title>
     <!-- Modern Typography: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +31,7 @@
                 <h2 class="card-title">🔑 Facebook Session & Auth</h2>
             </div>
             <p style="font-size: 0.85rem; color: var(--text-muted);">
-                Check your active login cookies or launch Chrome to log into Facebook manually.
+                Check active login cookies or launch Chrome for safe manual Facebook login.
             </p>
             <div class="btn-group">
                 <button class="btn btn-secondary" id="btnStatus">🔍 Check Session Status</button>
@@ -40,26 +40,47 @@
             <div id="sessionResult" style="font-size: 0.85rem; padding: 0.5rem; border-radius: 0.375rem; background: rgba(15,23,42,0.5); display: none;"></div>
         </div>
 
-        <!-- Card 2: Group Discovery -->
+        <!-- Card 2: Group Discovery, Real-Time Search & Presets Manager -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">👥 Facebook Groups</h2>
+                <h2 class="card-title">👥 Facebook Groups & Presets</h2>
+                <span id="groupCountBadge" style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.25rem 0.5rem; border-radius: 0.375rem;">0 loaded</span>
             </div>
             <div class="btn-group">
                 <button class="btn btn-secondary" id="btnGroups">📡 Extract Joined Groups</button>
             </div>
+
+            <!-- Group Presets Bar -->
+            <div style="display: flex; gap: 0.5rem; align-items: center; background: rgba(15,23,42,0.5); padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--card-border);">
+                <select id="presetSelect" style="flex: 1; padding: 0.4rem 0.6rem; font-size: 0.8rem;">
+                    <option value="">-- Load Group Preset --</option>
+                </select>
+                <button class="btn btn-secondary" id="btnSavePreset" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">💾 Save Selected as Preset</button>
+                <button class="btn btn-danger" id="btnDeletePreset" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;">🗑️ Delete Preset</button>
+            </div>
+
+            <!-- Real-Time Search & Bulk Selection Bar -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <input type="text" id="groupSearchInput" placeholder="🔎 Search groups by name or URL in real-time..." style="padding: 0.5rem 0.75rem; font-size: 0.85rem;"/>
+                <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.75rem;">
+                    <button class="btn btn-secondary" id="btnSelectAllFiltered" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">☑️ Select All Filtered</button>
+                    <button class="btn btn-secondary" id="btnDeselectAll" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">☒ Deselect All</button>
+                </div>
+            </div>
+
             <div class="group-list" id="groupList">
                 <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">
-                    No groups loaded yet. Click "Extract Joined Groups" to fetch.
+                    No groups loaded yet. Click "Extract Joined Groups" or load a saved preset.
                 </div>
             </div>
         </div>
 
-        <!-- Card 3: Post Sharing Automation -->
+        <!-- Card 3: Post Sharing Automation & Anti-Spam Safety -->
         <div class="card" style="grid-column: 1 / -1;">
             <div class="card-header">
-                <h2 class="card-title">🚀 Automate Post Sharing</h2>
+                <h2 class="card-title">🚀 Automate Post Sharing & Anti-Spam Controls</h2>
             </div>
+            
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="input-group">
                     <label for="postUrl">Facebook Post URL</label>
@@ -70,9 +91,63 @@
                     <textarea id="customMessage" placeholder="Check out this awesome post!"></textarea>
                 </div>
             </div>
+
+            <!-- Anti-Spam & Testing Settings Bar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: rgba(15,23,42,0.5); padding: 0.875rem; border-radius: 0.5rem; border: 1px solid var(--card-border);">
+                <div class="input-group">
+                    <label for="cooldownDays">🛡️ Anti-Spam Cooldown (Days)</label>
+                    <input type="number" id="cooldownDays" value="7" min="0" max="365" style="padding: 0.4rem 0.6rem;"/>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main);">
+                        <input type="checkbox" id="chkDryRun" checked style="width: 16px; height: 16px;"/>
+                        <strong>🧪 Dry-Run Mode (Simulation only)</strong>
+                    </label>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        Fills composer & preview, but does NOT click publish. Safe for testing!
+                    </span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main);">
+                        <input type="checkbox" id="chkAllowDuplicate" style="width: 16px; height: 16px;"/>
+                        <span>Allow Duplicate Sharing</span>
+                    </label>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        Bypass cooldown check and force share to groups even if recently posted.
+                    </span>
+                </div>
+            </div>
+
             <div class="btn-group">
                 <button class="btn btn-primary" id="btnShare">▶️ Start Sharing Task</button>
                 <button class="btn btn-danger" id="btnStop">⏹️ Abort Active Task</button>
+                <button class="btn btn-secondary" id="btnViewHistory">📜 View Share History</button>
+            </div>
+        </div>
+
+        <!-- Share History Modal / Container -->
+        <div class="card" id="historyCard" style="grid-column: 1 / -1; display: none;">
+            <div class="card-header">
+                <h2 class="card-title">📜 Share History Log</h2>
+                <button class="btn btn-secondary" id="btnCloseHistory" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Close</button>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto; background: rgba(15, 23, 42, 0.8); border-radius: 0.5rem; border: 1px solid var(--card-border);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                    <thead>
+                        <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--card-border);">
+                            <th style="padding: 0.5rem;">Timestamp</th>
+                            <th style="padding: 0.5rem;">Group Name</th>
+                            <th style="padding: 0.5rem;">Post URL</th>
+                            <th style="padding: 0.5rem;">Status</th>
+                            <th style="padding: 0.5rem;">Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-muted);">No history recorded yet.</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -92,7 +167,7 @@
         </div>
     </div>
 
-    <!-- Client JS -->
-    <script src="app.js"></script>
+    <!-- Client JS (ES Module) -->
+    <script type="module" src="app.js"></script>
 </body>
 </html>

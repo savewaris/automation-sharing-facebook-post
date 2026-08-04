@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Automation - Project Management & System Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(22, 30, 46, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(99, 102, 241, 0.4);
+      --accent-primary: #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --code-bg: #111827;
+      --nav-bg: rgba(15, 23, 42, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #ffffff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Search Bar */
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 420px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-main);
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    /* Tab Navigation */
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      padding: 0 32px;
+      margin-top: 20px;
+      border-bottom: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom-color: var(--accent-primary);
+      background: linear-gradient(to top, rgba(99, 102, 241, 0.1), transparent);
+    }
+
+    /* Content Area */
+    .container {
+      max-width: 1300px;
+      margin: 28px auto;
+      padding: 0 32px;
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--card-hover-border);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Badges & Tags */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-primary { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      margin: 12px 0;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-primary);
+      color: #ffffff;
+    }
+
+    /* Kanban Board Layout */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .kanban-board {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kanban-col {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .kanban-header {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .task-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+    }
+
+    .task-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .task-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .task-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    /* Lists & Specs */
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    ul li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    ul li::before {
+      content: "•";
+      color: var(--accent-primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+      position: absolute;
+      left: 0;
+      top: -2px;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Tables */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th, .doc-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .doc-table th {
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .doc-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🚀</div>
+      <div>
+        <div class="brand-title">Facebook Automation Docs</div>
+        <div class="brand-sub">Interactive Project Management & Architecture Reference</div>
+      </div>
+    </div>
+
+    <!-- Search Input -->
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search documentation, tasks, rules, or APIs..." onkeyup="filterDocs()">
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('overview')">📌 Overview</button>
+    <button class="tab-btn" onclick="switchTab('kanban')">📋 Backlog & Kanban</button>
+    <button class="tab-btn" onclick="switchTab('architecture')">🏗️ Architecture</button>
+    <button class="tab-btn" onclick="switchTab('api')">🔌 API & CLI Specs</button>
+    <button class="tab-btn" onclick="switchTab('rules')">🤖 Core Agent Rules</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- TAB 1: OVERVIEW -->
+    <section id="panel-overview" class="tab-panel active searchable-content">
+      <div class="highlight-box">
+        <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #ffffff;">🌟 System Overview</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          A production-grade full-stack automation platform for auto-sharing Facebook posts to joined groups using Playwright browser automation, Node.js Express backend, and a real-time Web UI Dashboard with WebSocket streaming logs.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">🔑 Core Capabilities</div>
+            <span class="badge badge-emerald">Active Features</span>
+          </div>
+          <ul>
+            <li><strong>1-Click Facebook Authentication:</strong> Launches visible browser for safe manual login; session cookies stored in <code>user_data/chrome_profile</code>.</li>
+            <li><strong>Real-Time Group Search & Presets:</strong> Instant group filtering, bulk select/deselect, and persistent JSON preset storage (<code>user_data/group_presets.json</code>).</li>
+            <li><strong>Background Sharing Engine:</strong> Auto-posts to groups with custom captions, image cards, and link previews.</li>
+            <li><strong>Dry-Run / Simulation Mode:</strong> Safely tests group post filling and link previews without clicking publish.</li>
+            <li><strong>Anti-Spam De-duplication:</strong> Keeps history (<code>user_data/share_history.json</code>) with customizable cooldown periods (7–30 days).</li>
+            <li><strong>WebSocket Log Stream:</strong> Live terminal log streaming from Playwright workers straight to the browser UI.</li>
+          </ul>
+        </div>
+
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">⚡ Quick Start & Run Commands</div>
+            <span class="badge badge-primary">Developer Setup</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">1. Install Node dependencies:</p>
+          <pre>npm install<button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">2. Download Chromium browser binaries for Playwright:</p>
+          <pre>npx playwright install chromium<button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">3. Start server & open dashboard (http://localhost:3000):</p>
+          <pre>npm start<button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">4. Run automated test suite:</p>
+          <pre>npm test<button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: KANBAN & BACKLOG -->
+    <section id="panel-kanban" class="tab-panel searchable-content">
+      <h2 style="margin-bottom: 20px; font-size: 1.25rem;">📋 Project Management & Task Backlog</h2>
+      <div class="kanban-board">
+
+        <!-- Column 1: Backlog -->
+        <div class="kanban-col searchable-card">
+          <div class="kanban-header">
+            <span>💡 Backlog</span>
+            <span class="badge badge-primary">2 Tasks</span>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Multi-Account Profile Switcher</div>
+            <div class="task-desc">Support saving and switching between multiple Facebook account profiles in user_data.</div>
+            <div class="task-footer">
+              <span class="badge badge-cyan">Feature</span>
+              <span style="color: var(--text-dim);">Medium Priority</span>
+            </div>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Scheduled Sharing Queue</div>
+            <div class="task-desc">Add cron / timer queue to automatically trigger sharing jobs at specific target times.</div>
+            <div class="task-footer">
+              <span class="badge badge-amber">Enhancement</span>
+              <span style="color: var(--text-dim);">Low Priority</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: To Do -->
+        <div class="kanban-col searchable-card">
+          <div class="kanban-header">
+            <span>📌 To Do</span>
+            <span class="badge badge-amber">2 Tasks</span>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Modularize App.js UI Code</div>
+            <div class="task-desc">Refactor remaining monolithic app.js into single-responsibility ES Modules under frontend/js/.</div>
+            <div class="task-footer">
+              <span class="badge badge-amber">Refactor</span>
+              <span style="color: var(--text-dim);">High Priority</span>
+            </div>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Group Cooldown Status UI</div>
+            <div class="task-desc">Display dynamic cooldown countdown timer badges next to skipped groups in the dashboard.</div>
+            <div class="task-footer">
+              <span class="badge badge-cyan">UI/UX</span>
+              <span style="color: var(--text-dim);">Medium Priority</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: In Progress -->
+        <div class="kanban-col searchable-card">
+          <div class="kanban-header">
+            <span>⚡ In Progress</span>
+            <span class="badge badge-primary">1 Task</span>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Static HTML Project Docs</div>
+            <div class="task-desc">Build interactive docs/project_management.html with full project specs and core global agent rules.</div>
+            <div class="task-footer">
+              <span class="badge badge-emerald">Documentation</span>
+              <span style="color: var(--text-dim);">In Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Completed -->
+        <div class="kanban-col searchable-card">
+          <div class="kanban-header">
+            <span>✅ Completed</span>
+            <span class="badge badge-emerald">4 Tasks</span>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Playwright Browser Manager</div>
+            <div class="task-desc">Persistent Chrome profile setup with cookie preservation and manual login launcher.</div>
+            <div class="task-footer"><span class="badge badge-emerald">Core</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Real-Time Group Search & Presets</div>
+            <div class="task-desc">Instant filter input, select-all filtered control, and preset load/save functions.</div>
+            <div class="task-footer"><span class="badge badge-emerald">Feature</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-title">Anti-Spam De-duplication History</div>
+            <div class="task-desc">Automatic cooldown checking and share history persistence in user_data/share_history.json.</div>
+            <div class="task-footer"><span class="badge badge-emerald">Security</span></div>
+          </div>
+          <div class="task-card">
+            <div class="task-title">WebSocket Log Streaming</div>
+            <div class="task-desc">Real-time live terminal streaming to web dashboard UI via Express ws module.</div>
+            <div class="task-footer"><span class="badge badge-emerald">Infrastructure</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: ARCHITECTURE -->
+    <section id="panel-architecture" class="tab-panel searchable-content">
+      <h2 style="margin-bottom: 20px; font-size: 1.25rem;">🏗️ System Architecture & Component Mapping</h2>
+      
+      <div class="grid-2">
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">📂 Directory Structure</div>
+            <span class="badge badge-cyan">Modular Design</span>
+          </div>
+          <pre style="font-size: 0.8rem;">
+automation-sharing-facebook-post/
+├── backend/
+│   ├── index.js             # Express server & WebSocket initialization
+│   ├── lib/
+│   │   ├── auth.js          # FB Session login launcher
+│   │   ├── browser.js       # Playwright browser persistent context
+│   │   ├── discovery.js     # FB Group extractor engine
+│   │   ├── history.js       # De-duplication & presets manager
+│   │   └── sharing.js       # Automation post pipeline (Dry-Run support)
+│   ├── routes/
+│   │   └── api.js           # REST API endpoints
+│   └── websocket/
+│       └── logger.js        # Real-time WebSocket log streamer
+├── docs/
+│   └── project_management.html # Interactive HTML docs & rules
+├── frontend/
+│   ├── js/                  # ES Module UI JS files (<150 lines each)
+│   │   ├── api.js           # REST API wrapper
+│   │   ├── terminal.js      # WebSocket log viewer widget
+│   │   └── websocket.js     # Real-time WS connection
+│   ├── index.html           # Web Dashboard interface
+│   └── styles.css           # Premium dark mode theme
+└── user_data/               # Persistent profile, history & presets
+          </pre>
+        </div>
+
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">🔄 Execution Pipeline & Data Flow</div>
+            <span class="badge badge-emerald">Data Flow</span>
+          </div>
+          <ul>
+            <li><strong>Browser Session Persistence:</strong> Playwright launches Chromium using <code>user_data/chrome_profile</code>. Session cookies and local storage persist between restarts.</li>
+            <li><strong>Group Discovery:</strong> Navigates to <code>facebook.com/groups/joins</code>, auto-scrolls the DOM, extracts group names and direct URLs, returning a structured list.</li>
+            <li><strong>Anti-Spam Verification:</strong> Before sharing to any group, <code>backend/lib/history.js</code> checks if the target URL was posted to that group within the cooldown window (e.g. 7 days).</li>
+            <li><strong>Post Pipeline:</strong> Navigates to target group page, opens composition modal, enters text, waits for link preview card rendering, and either clicks Publish (Live mode) or skips publish (Dry-Run mode).</li>
+            <li><strong>Live Telemetry:</strong> All log events pass through <code>WebSocketLogger</code>, broadcasting JSON payloads to connected browser dashboard clients.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: API & CLI SPECS -->
+    <section id="panel-api" class="tab-panel searchable-content">
+      <h2 style="margin-bottom: 20px; font-size: 1.25rem;">🔌 API & Command Line Specifications</h2>
+      
+      <div class="card searchable-card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">📡 REST API Endpoints</div>
+          <span class="badge badge-primary">HTTP Interface</span>
+        </div>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+              <th>Payload / Params</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-emerald">GET</span></td>
+              <td><code>/api/auth/status</code></td>
+              <td>Check Facebook authentication session status</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">POST</span></td>
+              <td><code>/api/auth/login</code></td>
+              <td>Launch headful browser for manual Facebook login</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-cyan">GET</span></td>
+              <td><code>/api/groups/discover</code></td>
+              <td>Scan and discover joined Facebook groups</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">POST</span></td>
+              <td><code>/api/sharing/start</code></td>
+              <td>Start post sharing job to selected groups</td>
+              <td><code>{ postUrl, caption, groupUrls, dryRun, cooldownDays }</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-emerald">GET</span></td>
+              <td><code>/api/presets</code></td>
+              <td>Get saved group preset lists</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">POST</span></td>
+              <td><code>/api/presets</code></td>
+              <td>Save custom group preset list</td>
+              <td><code>{ presetName, groupUrls }</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card searchable-card">
+        <div class="card-header">
+          <div class="card-title">📡 WebSocket Real-Time Stream</div>
+          <span class="badge badge-cyan">ws://localhost:3000/ws/logs</span>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
+          Emits JSON objects in real-time during automation runs:
+        </p>
+        <pre>{
+  "timestamp": "2026-08-04T16:00:00.000Z",
+  "level": "info", // "info" | "warn" | "error" | "success"
+  "message": "Sharing to group: Tech Enthusiasts Vietnam [1/5]",
+  "details": { "groupUrl": "https://facebook.com/groups/123456", "dryRun": false }
+}</pre>
+      </div>
+    </section>
+
+    <!-- TAB 5: CORE AGENT RULES -->
+    <section id="panel-rules" class="tab-panel searchable-content">
+      <div class="highlight-box">
+        <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #ffffff;">🤖 Core Global Agent Rules & Guidelines</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Mandatory architectural and code quality rules enforced across all AI Agents (Antigravity, Claude Code, Cursor, Windsurf) working on this repository.
+        </p>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- Modular Frontend Rule -->
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">📦 1. Modular Frontend File Structure</div>
+            <span class="badge badge-amber">Strict Rule</span>
+          </div>
+          <ul>
+            <li><strong>No Monolithic Frontend Files:</strong> Never write frontend script files exceeding 150 lines of code.</li>
+            <li><strong>Single-Responsibility ES Modules:</strong> Divide scripts under <code>frontend/js/</code>:
+              <ul>
+                <li><code>api.js</code>: REST API client wrappers.</li>
+                <li><code>groups.js</code>: State management & group list DOM rendering.</li>
+                <li><code>terminal.js</code>: Real-time UI log viewer component.</li>
+                <li><code>websocket.js</code>: WebSocket connection & auto-reconnect handler.</li>
+              </ul>
+            </li>
+            <li><strong>Module Loading:</strong> Include the main entry point in HTML via <code>&lt;script type="module" src="app.js"&gt;&lt;/script&gt;</code>.</li>
+          </ul>
+        </div>
+
+        <!-- Reusable Automation Modules -->
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">🧩 2. Reusable Automation Modules</div>
+            <span class="badge badge-primary">Architecture Standard</span>
+          </div>
+          <ul>
+            <li><strong>Decoupled Logic:</strong> Keep automation infrastructure independent from specific business logic to maximize reusability across projects.</li>
+            <li><code>BrowserManager</code>: Manages Playwright persistent browser context and Chrome profiles.</li>
+            <li><code>HistoryManager</code>: Manages anti-spam history de-duplication and JSON disk storage.</li>
+            <li><code>WebSocketLogger</code>: Manages real-time log event broadcasting to dashboard clients.</li>
+          </ul>
+        </div>
+
+        <!-- UI & Design Taste -->
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">🎨 3. UI/UX Design Standards</div>
+            <span class="badge badge-emerald">Visual Excellence</span>
+          </div>
+          <ul>
+            <li><strong>Rich Aesthetics:</strong> Modern dark mode with harmonious color palettes, subtle gradients, glassmorphism, and responsive typography (Inter / JetBrains Mono).</li>
+            <li><strong>Micro-Animations:</strong> Smooth state transitions, hover effects, and clean active tabs.</li>
+            <li><strong>No Placeholders:</strong> All UI mockups and elements must be complete and fully functional.</li>
+          </ul>
+        </div>
+
+        <!-- Codebase Doctor & Verification -->
+        <div class="card searchable-card">
+          <div class="card-header">
+            <div class="card-title">🛡️ 4. Code Quality & Verification</div>
+            <span class="badge badge-cyan">Quality Assurance</span>
+          </div>
+          <ul>
+            <li><strong>Empirical Verification:</strong> Never declare success without running build/test verification commands.</li>
+            <li><strong>Log Inspection:</strong> Inspect exact stack traces before diagnosing errors; no superficial symptom patches or silent exception swallowing.</li>
+            <li><strong>Preserve API Contracts:</strong> Update all invocation sites when function signatures change.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById('panel-' + tabId).classList.add('active');
+    }
+
+    // Instant Search Filter Logic
+    function filterDocs() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const activePanel = document.querySelector('.tab-panel.active');
+      if (!activePanel) return;
+
+      const searchableCards = activePanel.querySelectorAll('.searchable-card');
+
+      searchableCards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (query === '' || text.includes(query)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Copy Code Snippet Helper
+    function copyCode(button) {
+      const pre = button.parentElement;
+      const codeText = pre.innerText.replace('Copy', '').trim();
+      navigator.clipboard.writeText(codeText).then(() => {
+        button.innerText = 'Copied!';
+        button.style.background = '#10b981';
+        setTimeout(() => {
+          button.innerText = 'Copy';
+          button.style.background = 'rgba(255, 255, 255, 0.1)';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

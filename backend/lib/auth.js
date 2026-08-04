@@ -22,14 +22,65 @@ class AuthManager {
             const loginEmailInput = await this.bm.page.$('input[name="email"], input[id="email"]');
             const isLoggedOut = !!loginEmailInput || currentUrl.includes('/login');
 
+            let userId = null;
+            let profileUrl = null;
+            let accountName = null;
+            let username = null;
+            let avatarUrl = null;
+
+            if (!isLoggedOut) {
+                const cookies = await this.bm.context.cookies('https://www.facebook.com');
+                const cUserCookie = cookies.find(c => c.name === 'c_user');
+                if (cUserCookie) {
+                    userId = cUserCookie.value;
+                }
+
+                try {
+                    await this.bm.page.goto('https://www.facebook.com/me', { waitUntil: 'domcontentloaded', timeout: 15000 });
+                    profileUrl = this.bm.page.url();
+                    
+                    if (profileUrl.includes('facebook.com/')) {
+                        const handle = profileUrl.split('facebook.com/')[1]?.split('?')[0]?.replace(/\/$/, '');
+                        if (handle && !handle.includes('profile.php')) {
+                            username = '@' + handle;
+                            // Clean handle into readable Full Name format (e.g. waris.man.9803 -> Waris Man)
+                            const cleanParts = handle.replace(/\.\d+$/, '').split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1));
+                            accountName = cleanParts.join(' ');
+                        }
+                    }
+
+                    const title = await this.bm.page.title();
+                    if (!accountName && title && title !== 'Facebook' && !title.includes('Chats')) {
+                        accountName = title.replace(/\s*\|.*$/, '').replace(/^\(\d+\)\s*/, '').trim();
+                    }
+
+                    // Extract Avatar Image URL
+                    const avatarImgs = await this.bm.page.$$('svg image, img[alt*="profile"], img[alt*="Profile"], img[src*="scontent"]');
+                    for (const img of avatarImgs) {
+                        const src = await img.getAttribute('src').catch(() => null) || await img.getAttribute('xlink:href').catch(() => null);
+                        if (src && src.includes('scontent')) {
+                            avatarUrl = src;
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    profileUrl = userId ? `https://www.facebook.com/profile.php?id=${userId}` : 'https://www.facebook.com/me';
+                }
+            }
+
             const status = {
                 isLoggedIn: !isLoggedOut,
+                fullName: accountName || (userId ? `Facebook User` : null),
+                username: username || (userId ? `@user_${userId}` : null),
+                userId,
+                profileUrl: profileUrl || `https://www.facebook.com/profile.php?id=${userId}`,
+                avatarUrl: avatarUrl || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png',
                 currentUrl,
                 userDataDir: this.bm.userDataDir
             };
 
             if (!isLoggedOut) {
-                log(onLog, 'Facebook session is ACTIVE and logged in.', 'success');
+                log(onLog, `Facebook session ACTIVE: ${status.fullName} (${status.username} | ID: ${userId})`, 'success');
             } else {
                 log(onLog, 'Facebook session is NOT logged in. Please launch login browser.', 'warn');
             }

@@ -43,9 +43,57 @@ function createApiRouter(fbEngine) {
         }
     });
 
+    // GET /api/presets - Get saved group presets
+    router.get('/presets', (req, res) => {
+        try {
+            const engine = getEngine(req);
+            const presets = engine.historyManager.getPresets();
+            res.json({ success: true, presets });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // POST /api/presets - Save a new group preset
+    router.post('/presets', (req, res) => {
+        try {
+            const { name, groups } = req.body;
+            if (!name || !groups) {
+                return res.status(400).json({ success: false, error: 'name and groups are required' });
+            }
+            const engine = getEngine(req);
+            const preset = engine.historyManager.savePreset(name, groups);
+            res.json({ success: true, preset });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // DELETE /api/presets/:id - Delete a preset
+    router.delete('/presets/:id', (req, res) => {
+        try {
+            const engine = getEngine(req);
+            engine.historyManager.deletePreset(req.params.id);
+            res.json({ success: true, message: 'Preset deleted.' });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // GET /api/history - Get share history logs
+    router.get('/history', (req, res) => {
+        try {
+            const engine = getEngine(req);
+            const history = engine.historyManager.getHistory();
+            res.json({ success: true, history });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
     // POST /api/share - Trigger post sharing to target Facebook groups
     router.post('/share', async (req, res) => {
-        const { postUrl, targetGroups, customMessage, minDelaySec, maxDelaySec } = req.body;
+        const { postUrl, targetGroups, customMessage, minDelaySec, maxDelaySec, dryRun, cooldownDays, allowDuplicate } = req.body;
 
         if (!postUrl) {
             return res.status(400).json({ success: false, error: 'postUrl is required' });
@@ -59,7 +107,10 @@ function createApiRouter(fbEngine) {
             targetGroups,
             customMessage,
             minDelaySec: minDelaySec || 10,
-            maxDelaySec: maxDelaySec || 30
+            maxDelaySec: maxDelaySec || 30,
+            dryRun: !!dryRun,
+            cooldownDays: cooldownDays !== undefined ? parseInt(cooldownDays, 10) : 7,
+            allowDuplicate: !!allowDuplicate
         }).catch((err) => {
             engine.emit('log', {
                 timestamp: new Date().toLocaleTimeString(),
@@ -68,7 +119,10 @@ function createApiRouter(fbEngine) {
             });
         });
 
-        res.json({ success: true, message: 'Post sharing task initiated in background.' });
+        res.json({
+            success: true,
+            message: dryRun ? 'Post sharing simulation initiated (Dry-Run).' : 'Post sharing task initiated in background.'
+        });
     });
 
     // POST /api/stop - Abort currently running post sharing task

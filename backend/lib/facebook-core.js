@@ -3,6 +3,7 @@ const BrowserManager = require('./browser');
 const AuthManager = require('./auth');
 const GroupDiscovery = require('./discovery');
 const PostSharingManager = require('./sharing');
+const HistoryManager = require('./history');
 const { log } = require('./utils');
 
 // Unified Facebook Automation Core Engine
@@ -12,7 +13,8 @@ class FacebookCore extends EventEmitter {
         this.browserManager = new BrowserManager(options);
         this.authManager = new AuthManager(this.browserManager);
         this.groupDiscovery = new GroupDiscovery(this.browserManager);
-        this.sharingManager = new PostSharingManager(this.browserManager);
+        this.historyManager = new HistoryManager(this.browserManager.userDataDir);
+        this.sharingManager = new PostSharingManager(this.browserManager, this.historyManager);
     }
 
     // Create a logger handler that emits 'log' event and calls optional onLog callback
